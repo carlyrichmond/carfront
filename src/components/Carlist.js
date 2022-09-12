@@ -1,12 +1,11 @@
 import apm from '../rum'
 import React, { Component } from 'react';
 import { SERVER_URL } from '../constants.js'
-import ReactTable from "react-table";
+import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'
 import AddCar from './AddCar.js';
-import { CSVLink } from 'react-csv';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -19,9 +18,9 @@ class Carlist extends Component {
 
     // Add new car
     addCar(car) {
-        // Create a custom transaction
+        // Add car metadata as labels to the RUM click transaction
         var transaction = apm.startTransaction("Add Car", "Car");
-        apm.addTags(car);
+        transaction.addLabels(car);
 
         fetch(SERVER_URL + 'api/cars',
             {
@@ -31,8 +30,12 @@ class Carlist extends Component {
                 },
                 body: JSON.stringify(car)
             })
-            .then(res => this.fetchCars())
+            .then(res => { 
+                this.fetchCars();
+            })
             .catch(err => console.error(err))
+        
+        transaction.end();
     }
 
     fetchCars = () => {
